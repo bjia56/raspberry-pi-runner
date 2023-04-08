@@ -48,7 +48,6 @@ runs:
       working-directory: ${{ github.action_path }}
       run: |
         ./run_vm.sh &
-        sleep 5m
 
         # Wait until ssh is up
         ./wait_for_ssh.sh localhost 5555 pi
