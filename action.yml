@@ -1,0 +1,71 @@
+name: 'Raspberry Pi VM Runner'
+description: 'Action to execute commands within a Raspberry Pi VM running on QEMU'
+author: 'Brett Jia'
+
+inputs:
+  commands:
+    description: 'Commands to run on the Pi, executed with /bin/bash'
+    required: true
+    default: 'uname -a'
+  prerun_copy_from:
+    description: 'Path on the host to copy into the VM, before commands are executed'
+    required: false
+    default: ''
+  prerun_copy_to:
+    description: 'Path on the VM to copy files to, before commands are executed'
+    required: false
+    default: '/home/pi'
+  postrun_copy_from:
+    description: 'Path on the VM to copy to the host, after commands are executed'
+    required: false
+    default: ''
+  postrun_copy_to:
+    description: 'Path on the host to copy files to, after commands are executed'
+    required: false
+    default: '.'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y qemu-system
+        qemu-system-aarch64 -version
+
+    - name: Download raspberry pi image
+      working-directory: ${{ github.action_path }}
+      run: |
+        wget -O raspi.img.xz -q https://github.com/bjia56/qemu-raspi-images/releases/download/2023.02.22%2Barm64.lite.0/raspi.img.xz
+        wget -O kernel.img -q https://github.com/bjia56/qemu-raspi-images/releases/download/2023.02.22%2Barm64.lite.0/kernel8.img
+        wget -O rpi3bp.dtb -q https://github.com/bjia56/qemu-raspi-images/releases/download/2023.02.22%2Barm64.lite.0/bcm2710-rpi-3-b-plus.dtb
+        xz -d -v raspi.img.xz
+
+    - name: Boot pi
+      working-directory: ${{ github.action_path }}
+      run: |
+        ./run_vm.sh &
+        sleep 5m
+
+        # Wait until ssh is up
+        ./wait_for_ssh.sh localhost 5555 pi
+
+    - name: Copy files into pi
+      if: ${{ inputs.prerun_copy_from != '' }}
+      run: |
+        scp -P 5555 -r ${{ inputs.prerun_copy_from }} pi@localhost:${{ inputs.prerun_copy_to }}
+
+    - name: Run commands
+      run: |
+        ssh -p 5555 pi@localhost << RPIRUNNERSCRIPT
+          ${{ inputs.commands }}
+        RPIRUNNERSCRIPT
+
+    - name: Copy files from pi
+      if: ${{ inputs.postrun_copy_from != '' }}
+      run: |
+        scp -P 5555 -r pi@localhost:${{ inputs.postrun_copy_from }} ${{ inputs.postrun_copy_to }}
+
+    - name: Stop pi
+      run: |
+        ssh -p 5555 pi@localhost "sudo halt" || true
