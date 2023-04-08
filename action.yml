@@ -28,12 +28,14 @@ runs:
   using: 'composite'
   steps:
     - name: Install dependencies
+      shell: bash
       run: |
         sudo apt update
         sudo apt install -y qemu-system
         qemu-system-aarch64 -version
 
     - name: Download raspberry pi image
+      shell: bash
       working-directory: ${{ github.action_path }}
       run: |
         wget -O raspi.img.xz -q https://github.com/bjia56/qemu-raspi-images/releases/download/2023.02.22%2Barm64.lite.0/raspi.img.xz
@@ -42,6 +44,7 @@ runs:
         xz -d -v raspi.img.xz
 
     - name: Boot pi
+      shell: bash
       working-directory: ${{ github.action_path }}
       run: |
         ./run_vm.sh &
@@ -51,21 +54,25 @@ runs:
         ./wait_for_ssh.sh localhost 5555 pi
 
     - name: Copy files into pi
+      shell: bash
       if: ${{ inputs.prerun_copy_from != '' }}
       run: |
         scp -P 5555 -r ${{ inputs.prerun_copy_from }} pi@localhost:${{ inputs.prerun_copy_to }}
 
     - name: Run commands
+      shell: bash
       run: |
         ssh -p 5555 pi@localhost << RPIRUNNERSCRIPT
           ${{ inputs.commands }}
         RPIRUNNERSCRIPT
 
     - name: Copy files from pi
+      shell: bash
       if: ${{ inputs.postrun_copy_from != '' }}
       run: |
         scp -P 5555 -r pi@localhost:${{ inputs.postrun_copy_from }} ${{ inputs.postrun_copy_to }}
 
     - name: Stop pi
+      shell: bash
       run: |
         ssh -p 5555 pi@localhost "sudo halt" || true
