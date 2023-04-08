@@ -62,13 +62,10 @@ runs:
       shell: bash
       working-directory: ${{ github.action_path }}
       run: |
-        cat <<- RPIRUNNERSCRIPT > commands.sh
-          #!/bin/bash
-          ${{ inputs.commands }}
+        cat <<- "RPIRUNNERSCRIPT" > commands.sh
+        ${{ inputs.commands }}
         RPIRUNNERSCRIPT
-        chmod +x commands.sh
-        scp -P 5555 commands.sh pi@localhost:/home/pi
-        ssh -p 5555 pi@localhost /home/pi/commands.sh
+        cat commands.sh | ssh -p 5555 pi@localhost /bin/bash
 
     - name: Copy files from pi
       shell: bash
