@@ -15,4 +15,5 @@ jobs:
     - uses: ./
       with:
         commands: |
-            test `uname -m` = 'aarch64'
+          uname -a
+          test `uname -m` = 'aarch64'
