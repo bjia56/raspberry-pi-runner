@@ -63,6 +63,7 @@ runs:
       working-directory: ${{ github.action_path }}
       run: |
         cat <<- RPIRUNNERSCRIPT > commands.sh
+          #!/bin/bash
           ${{ inputs.commands }}
         RPIRUNNERSCRIPT
         chmod +x commands.sh
