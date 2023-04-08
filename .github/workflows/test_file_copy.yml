@@ -1,4 +1,5 @@
 name: Test copy to and from pi
+on:
   push:
     branches:
       - 'main'
