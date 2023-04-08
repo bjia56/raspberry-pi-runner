@@ -23,7 +23,7 @@ RESULT=1 # 0 upon success
 TIMEOUT=30 # number of iterations (5 minutes?)
 while :; do
     echo "waiting for server ping ..."
-    status=$(ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=no ${REMOTE_USER}@${HOST} -p ${PORT} echo ok 2>&1)
+    status=$(ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${HOST} -p ${PORT} echo ok 2>&1)
     RESULT=$?
     if [ $RESULT -eq 0 ]; then
         echo "connected ok"
