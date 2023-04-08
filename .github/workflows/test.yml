@@ -34,11 +34,11 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - run: |
-        echo 'hello world' > /tmp/hello.txt
+        echo 'helloworld' > /tmp/hello.txt
     - uses: ./
       with:
         commands: |
-          test `cat hello.txt` = 'hello world'
+          test `cat hello.txt` = 'helloworld'
         prerun_copy_from: /tmp/hello.txt
         postrun_copy_from: /home/pi/hello.txt
     - run: |
