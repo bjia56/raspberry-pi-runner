@@ -7,6 +7,10 @@ inputs:
     description: 'Commands to run on the Pi, executed with /bin/bash'
     required: true
     default: 'uname -a'
+  user:
+    description: 'User to run commands on the Pi, either pi or root'
+    required: true
+    default: 'pi'
   prerun_copy_from:
     description: 'Path on the host to copy into the VM, before commands are executed'
     required: false
@@ -47,22 +51,22 @@ runs:
       shell: bash
       working-directory: ${{ github.action_path }}
       run: |
-        ./run_vm.sh &
+        sudo ./run_vm.sh &
 
         # Wait until ssh is up
-        ./wait_for_ssh.sh localhost 5555 pi
+        ./wait_for_ssh.sh 172.18.0.2 22 ${{ inputs.user }}
 
     - name: Copy files into pi
       shell: bash
       if: ${{ inputs.prerun_copy_from != '' }}
       run: |
-        scp -P 5555 -r ${{ inputs.prerun_copy_from }} pi@localhost:${{ inputs.prerun_copy_to }}
+        scp -r ${{ inputs.prerun_copy_from }} ${{ inputs.user }}@172.18.0.2:${{ inputs.prerun_copy_to }}
 
     - name: Run commands
       shell: bash
       working-directory: ${{ github.action_path }}
       run: |
-        cat <<- "RPIRUNNERSCRIPT" | ssh -p 5555 pi@localhost /bin/bash
+        cat <<- "RPIRUNNERSCRIPT" | ssh ${{ inputs.user }}@172.18.0.2 /bin/bash
         ${{ inputs.commands }}
         RPIRUNNERSCRIPT
 
@@ -70,9 +74,10 @@ runs:
       shell: bash
       if: ${{ inputs.postrun_copy_from != '' }}
       run: |
-        scp -P 5555 -r pi@localhost:${{ inputs.postrun_copy_from }} ${{ inputs.postrun_copy_to }}
+        scp -r ${{ inputs.user }}@172.18.0.2:${{ inputs.postrun_copy_from }} ${{ inputs.postrun_copy_to }}
 
     - name: Stop pi
       shell: bash
       run: |
-        ssh -p 5555 pi@localhost "sudo halt" || true
+        ssh root@172.18.0.2 halt || true
+        sudo ./kill_vm.sh
