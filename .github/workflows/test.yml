@@ -41,3 +41,25 @@ jobs:
         postrun_copy_from: /home/pi/hello.txt
     - run: |
         test `cat /tmp/hello.txt` = `cat hello.txt`
+
+  test_user_root:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: ./
+      with:
+        commands: |
+          whoami
+          test `whoami` = 'root'
+        user: root
+
+  test_user_pi:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: ./
+      with:
+        commands: |
+          whoami
+          test `whoami` = 'pi'
+        user: pi
