@@ -78,6 +78,7 @@ runs:
 
     - name: Stop pi
       shell: bash
+      working-directory: ${{ github.action_path }}
       run: |
         ssh root@172.18.0.2 halt || true
         sudo ./kill_vm.sh
