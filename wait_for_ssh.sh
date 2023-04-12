@@ -20,7 +20,7 @@ if [ -z "$3" ]
 fi
 echo "polling to see that host is up and ready"
 RESULT=1 # 0 upon success
-TIMEOUT=30 # number of iterations (5 minutes?)
+TIMEOUT=150 # number of iterations (5 minutes?)
 while :; do
     echo "waiting for server ping ..."
     status=$(ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${HOST} -p ${PORT} echo ok 2>&1)
@@ -34,5 +34,5 @@ while :; do
         echo "timed out"
         exit 1
     fi
-    sleep 10
+    sleep 2
 done

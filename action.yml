@@ -27,6 +27,10 @@ inputs:
     description: 'Path on the host to copy files to, after commands are executed'
     required: false
     default: '.'
+  debug:
+    description: 'Print debugging output from VM initialization and teardown'
+    required: false
+    default: 'no'
 
 runs:
   using: 'composite'
@@ -34,50 +38,84 @@ runs:
     - name: Install dependencies
       shell: bash
       run: |
-        sudo apt-get update -qq >/dev/null
-        sudo apt-get install -y -qq qemu-system >/dev/null
-        qemu-system-aarch64 -version
+        # Install dependencies
+        sudo apt-get update -qq > /dev/null
+        sudo apt-get install -y -qq qemu-system > /dev/null
+
+        case "${{ inputs.debug }}" in
+        yes|true)
+          qemu-system-aarch64 -version
+        ;;
+        no|false)
+        ;;
+        esac
 
     - name: Download raspberry pi image
       shell: bash
       working-directory: ${{ github.action_path }}
       run: |
+        # Download raspberry pi image
         wget -O raspi.img.xz -q https://github.com/bjia56/qemu-raspi-images/releases/download/2023.02.22%2Barm64.lite.1/raspi.img.xz
         wget -O kernel.img -q https://github.com/bjia56/qemu-raspi-images/releases/download/2023.02.22%2Barm64.lite.1/kernel8.img
         wget -O rpi3bp.dtb -q https://github.com/bjia56/qemu-raspi-images/releases/download/2023.02.22%2Barm64.lite.1/bcm2710-rpi-3-b-plus.dtb
-        xz -d -v raspi.img.xz
+        case "${{ inputs.debug }}" in
+        yes|true)
+          xz -d -v raspi.img.xz
+        ;;
+        no|false)
+          xz -d -v raspi.img.xz > /dev/null
+        ;;
+        esac
 
     - name: Boot pi
       shell: bash
       working-directory: ${{ github.action_path }}
       run: |
-        sudo ./run_vm.sh &
-
-        # Wait until ssh is up
-        ./wait_for_ssh.sh 172.18.0.2 22 ${{ inputs.user }}
+        # Boot pi
+        case "${{ inputs.debug }}" in
+        yes|true)
+          sudo ./run_vm.sh &
+          ./wait_for_ssh.sh 172.18.0.2 22 ${{ inputs.user }}
+        ;;
+        no|false)
+          sudo ./run_vm.sh & > /dev/null
+          ./wait_for_ssh.sh 172.18.0.2 22 ${{ inputs.user }} > /dev/null
+        ;;
+        esac
 
     - name: Copy files into pi
       shell: bash
       if: ${{ inputs.prerun_copy_from != '' }}
       run: |
+        # Copy files into pi
         scp -r ${{ inputs.prerun_copy_from }} ${{ inputs.user }}@172.18.0.2:${{ inputs.prerun_copy_to }}
 
     - name: Run commands
       shell: bash
       working-directory: ${{ github.action_path }}
       run: |
-        cat <<- "RPIRUNNERSCRIPT" | ssh ${{ inputs.user }}@172.18.0.2 "/bin/bash -e"
-          ${{ inputs.commands }}
+        # Run commands
+        cat <<- "RPIRUNNERSCRIPT" | ssh ${{ inputs.user }}@172.18.0.2 /bin/bash
+        ${{ inputs.commands }}
         RPIRUNNERSCRIPT
 
     - name: Copy files from pi
       shell: bash
       if: ${{ inputs.postrun_copy_from != '' }}
       run: |
+        # Copy files from pi
         scp -r ${{ inputs.user }}@172.18.0.2:${{ inputs.postrun_copy_from }} ${{ inputs.postrun_copy_to }}
 
     - name: Stop pi
       shell: bash
       working-directory: ${{ github.action_path }}
       run: |
-        sudo ./kill_vm.sh
+        # Stop pi
+        case "${{ inputs.debug }}" in
+        yes|true)
+          sudo ./kill_vm.sh
+        ;;
+        no|false)
+          sudo ./kill_vm.sh > /dev/null
+        ;;
+        esac
