@@ -74,3 +74,16 @@ jobs:
           whoami
           test `whoami` = 'pi'
         user: pi
+
+  all_tests_passed:
+    needs:
+    - test_simple
+    - test_simple_debug
+    - test_docker
+    - test_file_copy
+    - test_user_root
+    - test_user_pi
+    runs-on: ubuntu-latest
+    steps:
+    - run: |
+        echo "All tests passed!"
