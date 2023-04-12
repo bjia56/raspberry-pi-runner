@@ -31,7 +31,7 @@ while :; do
     fi
     TIMEOUT=$((TIMEOUT-1))
     if [ $TIMEOUT -eq 0 ]; then
-        echo "timed out"
+        >&2 echo "timed out"
         exit 1
     fi
     sleep 2
