@@ -63,7 +63,7 @@ runs:
           xz -d -v raspi.img.xz
         ;;
         no|false)
-          xz -d -v raspi.img.xz > /dev/null
+          xz -d -v raspi.img.xz > /dev/null 2>&1
         ;;
         esac
 
@@ -78,7 +78,7 @@ runs:
           ./wait_for_ssh.sh 172.18.0.2 22 ${{ inputs.user }}
         ;;
         no|false)
-          sudo ./run_vm.sh & > /dev/null
+          sudo ./run_vm.sh > /dev/null 2>&1 &
           ./wait_for_ssh.sh 172.18.0.2 22 ${{ inputs.user }} > /dev/null
         ;;
         esac
@@ -116,6 +116,6 @@ runs:
           sudo ./kill_vm.sh
         ;;
         no|false)
-          sudo ./kill_vm.sh > /dev/null
+          sudo ./kill_vm.sh > /dev/null 2>&1
         ;;
         esac
