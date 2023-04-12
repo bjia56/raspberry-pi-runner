@@ -18,6 +18,17 @@ jobs:
           uname -m
           test `uname -m` = 'aarch64'
 
+  test_simple_debug:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: ./
+      with:
+        debug: true
+        commands: |
+          uname -m
+          test `uname -m` = 'aarch64'
+
   test_docker:
     runs-on: ubuntu-latest
     steps:
