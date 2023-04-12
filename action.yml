@@ -66,8 +66,8 @@ runs:
       shell: bash
       working-directory: ${{ github.action_path }}
       run: |
-        cat <<- "RPIRUNNERSCRIPT" | ssh ${{ inputs.user }}@172.18.0.2 /bin/bash
-        ${{ inputs.commands }}
+        cat <<- "RPIRUNNERSCRIPT" | ssh ${{ inputs.user }}@172.18.0.2 "/bin/bash -e"
+          ${{ inputs.commands }}
         RPIRUNNERSCRIPT
 
     - name: Copy files from pi
@@ -80,5 +80,4 @@ runs:
       shell: bash
       working-directory: ${{ github.action_path }}
       run: |
-        ssh root@172.18.0.2 halt || true
         sudo ./kill_vm.sh
