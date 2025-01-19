@@ -108,6 +108,7 @@ runs:
 
     - name: Stop pi
       shell: bash
+      if: false
       working-directory: ${{ github.action_path }}
       run: |
         # Stop pi
