@@ -73,6 +73,17 @@ jobs:
           whoami
           test `whoami` = 'pi'
         user: pi
+        
+  test_custom_shell:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: ./
+    - shell: raspberrypi {0}
+      run: |
+        whoami
+        uname -a
+        date
 
   all_tests_passed:
     needs:
