@@ -93,6 +93,7 @@ jobs:
     - test_file_copy
     - test_user_root
     - test_user_pi
+    - test_custom_shell
     runs-on: ubuntu-latest
     steps:
     - run: |
