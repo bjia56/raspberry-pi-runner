@@ -84,6 +84,7 @@ runs:
         esac
         
     - name: Add Raspberry Pi SSH config
+      shell: bash
       run: |
         mkdir -p ~/.ssh
         echo -e "Host raspberrypi\n  HostName 172.18.0.2\n  User ${{ inputs.user }}" >> ~/.ssh/config
