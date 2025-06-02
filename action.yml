@@ -89,6 +89,13 @@ runs:
         mkdir -p ~/.ssh
         echo -e "Host raspberrypi\n  HostName 172.18.0.2\n  User ${{ inputs.user }}" >> ~/.ssh/config
         chmod 600 ~/.ssh/config
+
+        mkdir -p ~/.local/bin
+        cat > ~/.local/bin/raspberrypi << EOL
+        #!/usr/bin/env sh
+        ssh raspberrypi sh<\$1
+        EOL
+        chmod +x ~/.local/bin/raspberrypi
     
     - name: Copy files into pi
       shell: bash
