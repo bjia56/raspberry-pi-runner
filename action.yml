@@ -82,20 +82,26 @@ runs:
           ./wait_for_ssh.sh 172.18.0.2 22 ${{ inputs.user }} > /dev/null
         ;;
         esac
-
+        
+    - name: Add Raspberry Pi SSH config
+      run: |
+        mkdir -p ~/.ssh
+        echo -e "Host raspberrypi\n  HostName 172.18.0.2\n  User ${{ inputs.user }}" >> ~/.ssh/config
+        chmod 600 ~/.ssh/config
+    
     - name: Copy files into pi
       shell: bash
       if: ${{ inputs.prerun_copy_from != '' }}
       run: |
         # Copy files into pi
-        scp -r ${{ inputs.prerun_copy_from }} ${{ inputs.user }}@172.18.0.2:${{ inputs.prerun_copy_to }}
+        scp -r ${{ inputs.prerun_copy_from }} ${{ inputs.user }}@raspberrypi:${{ inputs.prerun_copy_to }}
 
     - name: Run commands
       shell: bash
       working-directory: ${{ github.action_path }}
       run: |
         # Run commands
-        cat <<- "RPIRUNNERSCRIPT" | ssh ${{ inputs.user }}@172.18.0.2 /bin/bash
+        cat <<- "RPIRUNNERSCRIPT" | ssh ${{ inputs.user }}@raspberrypi /bin/bash
         ${{ inputs.commands }}
         RPIRUNNERSCRIPT
 
@@ -104,7 +110,7 @@ runs:
       if: ${{ inputs.postrun_copy_from != '' }}
       run: |
         # Copy files from pi
-        scp -r ${{ inputs.user }}@172.18.0.2:${{ inputs.postrun_copy_from }} ${{ inputs.postrun_copy_to }}
+        scp -r ${{ inputs.user }}@raspberrypi:${{ inputs.postrun_copy_from }} ${{ inputs.postrun_copy_to }}
 
     - name: Stop pi
       shell: bash
